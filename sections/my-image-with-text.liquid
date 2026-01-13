@@ -1,0 +1,180 @@
+{{ 'my-image-with-text.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign heading = section.settings.heading
+  assign subheading = section.settings.subheading
+  assign text = section.settings.text
+
+  assign btn_label = section.settings.button_label
+  assign btn_link = section.settings.button_link
+
+  assign img_desktop = section.settings.image_desktop
+  assign img_mobile = section.settings.image_mobile | default: img_desktop
+
+  assign img_mobile_width = 343
+  assign img_mobile_width_retina = img_mobile_width | times: 2
+
+  assign img_desktop_width = 816
+  assign img_desktope_width_retina = img_desktop_width | times: 2
+
+  if section.settings.image_position == 'right'
+    assign image_revers = 'my-image-with-text__content--revers'
+  endif
+-%}
+
+<div class="my-image-with-text">
+  <div class="my-image-with-text__container my-image-with-text__container--width">
+    <div class="my-image-with-text__wrapper">
+      <div class="my-image-with-text__media">
+        <picture>
+          {%- if img_desktop != blank -%}
+            {%- if img_mobile != blank -%}
+              <source
+                media="(max-width: 991px)"
+                srcset="
+                  {{ img_mobile | image_url: width: img_mobile_width }} 1x,
+                  {{ img_mobile | image_url: width: img_mobile_width_retina }} 2x
+                "
+              >
+            {%- endif -%}
+            <img
+              class="my-image-with-text__img"
+              src="{{ img_desktop | image_url: width: img_desktop_width }}"
+              srcset="{{ img_desktop | image_url: width: img_desktop_width }} 1x, {{ img_desktop | image_url: width: img_desktope_width_retina }} 2x"
+              {% if section.index > 1 %}
+                loading="lazy"
+              {% endif %}
+              alt="{{ img_desktop.alt }}"
+              width="816"
+              height="600"
+            >
+          {%- else -%}
+            {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+          {%- endif -%}
+        </picture>
+      </div>
+
+      <div class="my-image-with-text__content {{ image_revers }}">
+        {%- if heading != blank -%}
+          <h2 class="my-image-with-text__heading">
+            {{ heading }}
+          </h2>
+        {% endif %}
+
+        {% if subheading != blank -%}
+          <p class="my-image-with-text__subheading">
+            {{ subheading }}
+          </p>
+        {% endif %}
+
+        {% if text != blank -%}
+          <div class="my-image-with-text__text">
+            {{ text }}
+          </div>
+        {% endif %}
+
+        {% if btn_label != blank and btn_link != blank -%}
+          <a
+            href="{{ btn_link }}"
+            class="my-image-with-text__btn-link"
+          >
+            {{ btn_label }}
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "My image with text",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "What does it mean to Live Inspired?"
+    },
+    {
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Our Story"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text"
+    },
+    {
+      "type": "header",
+      "content": "Button"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Read Our Story"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+
+    {
+      "type": "header",
+      "content": "Image",
+      "info": "Upload desktop and mobile versions; set position"
+    },
+
+    {
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Image desktop"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Image mobile"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position",
+      "info": "Select image placement",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    }
+  ],
+
+  "presets": [
+    {
+      "name": "My image with text",
+      "category": "Custom Sections",
+      "settings": {
+        "heading": "What does it mean to Live Inspired?",
+        "subheading": "Our Story",
+        "text": "<p>To live inspired, is to live a life true to your values, a life that’s meaningful, and a life of purpose. To fill with goodness your body, mind, and soul. To live inspired, is to choose love over fear, to choose compassion, kindness, and joy. To be courageous and tender in the face of life’s challenges; and brave and fearless when taking chances. To embrace change and imperfection. To be yourself and to love yourself. To know that even when you make a mistake, you can choose again, and keep moving forward. Always learning, unlearning, evolving, thriving, connecting, creating. To live inspired, is to live a life worth living.</p>",
+        "button_label": "Read Our Story",
+        "button_link": "#"
+      }
+    }
+  ]
+}
+{% endschema %}

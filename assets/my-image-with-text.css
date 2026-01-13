@@ -1,0 +1,126 @@
+* {
+    padding: 0;
+}
+
+body {
+    padding: 0;
+    font-weight: var(--font-primary--weight);
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+section {
+    padding: 0 64px;
+}
+
+section ~ section {
+    margin-top: 40px;
+}
+
+.my-image-with-text {
+    width: 100%;
+}
+
+.my-image-with-text__container {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+}
+
+.my-image-with-text__container--width {
+    max-width: 1680px;
+}
+
+.my-image-with-text__wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: center;
+    padding: 32px 16px;
+    gap: 24px 16px;
+}
+
+.my-image-with-text__media {
+    width: 100%;
+    max-width: 816px;
+    overflow: hidden;
+    border-radius: 16px;
+}
+.my-image-with-text__img {
+    width: 100%;
+    object-fit: cover;
+}
+
+.my-image-with-text__content {
+    display: flex;
+    row-gap: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.my-image-with-text__heading {
+    color: #000;
+    font-weight: 500;
+    font-size: 38px;
+    line-height: 1.211;
+}
+
+.my-image-with-text__subheading {
+    color: #000;
+    font-weight: 500;
+}
+.my-image-with-text__text {
+    display: flex;
+    flex-direction: column;
+    align-items:flex-start;
+    gap: 16px; 
+}
+
+.my-image-with-text__btn-link {
+    display: inline-block;
+    margin-top: 16px;
+    padding: 15px 32px;
+    border: 1px solid #000;
+    border-radius: 32px;
+    color: #000;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+@media (min-width: 992px) {
+    .my-image-with-text__media {
+        max-width: 816px;
+    }
+
+    .my-image-with-text__content {
+        padding: 24px 48px;
+    }
+
+    .my-image-with-text__content--revers {
+        grid-row: 1;
+    }
+}
+
+@media (max-width: 991px) {
+    .my-image-with-text__wrapper {
+        grid-template-columns: 1fr;
+    }
+
+    .my-image-with-text__container--width {
+        max-width: 375px;
+    }
+
+    .my-image-with-text__heading {
+        font-size: 28px;
+        line-height: 1.214;
+    }
+
+    .my-image-with-text__btn-link {
+        margin-top: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    section {
+        padding:0 16px;
+    }
+}
