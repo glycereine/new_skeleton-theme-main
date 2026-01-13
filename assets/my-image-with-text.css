@@ -1,16 +1,11 @@
-* {
-    padding: 0;
+:root {
+    --color-black: #000;
 }
 
 body {
-    padding: 0;
     font-weight: var(--font-primary--weight);
     font-size: 16px;
     line-height: 1.5;
-}
-
-section {
-    padding: 0 64px;
 }
 
 section ~ section {
@@ -41,7 +36,6 @@ section ~ section {
 
 .my-image-with-text__media {
     width: 100%;
-    max-width: 816px;
     overflow: hidden;
     border-radius: 16px;
 }
@@ -58,14 +52,14 @@ section ~ section {
 }
 
 .my-image-with-text__heading {
-    color: #000;
+    color: var(--color-black);
     font-weight: 500;
     font-size: 38px;
     line-height: 1.211;
 }
 
 .my-image-with-text__subheading {
-    color: #000;
+    color: var(--color-black);
     font-weight: 500;
 }
 .my-image-with-text__text {
@@ -79,9 +73,9 @@ section ~ section {
     display: inline-block;
     margin-top: 16px;
     padding: 15px 32px;
-    border: 1px solid #000;
+    border: 1px solid var(--color-black);
     border-radius: 32px;
-    color: #000;
+    color: var(--color-black);
     font-weight: 500;
     text-decoration: none;
 }
@@ -105,10 +99,6 @@ section ~ section {
         grid-template-columns: 1fr;
     }
 
-    .my-image-with-text__container--width {
-        max-width: 375px;
-    }
-
     .my-image-with-text__heading {
         font-size: 28px;
         line-height: 1.214;
@@ -116,11 +106,5 @@ section ~ section {
 
     .my-image-with-text__btn-link {
         margin-top: 8px;
-    }
-}
-
-@media (max-width: 480px) {
-    section {
-        padding:0 16px;
     }
 }

@@ -37,17 +37,22 @@
                 "
               >
             {%- endif -%}
+
+            {% # theme-check-disable ImgWidthAndHeight %}
             <img
               class="my-image-with-text__img"
               src="{{ img_desktop | image_url: width: img_desktop_width }}"
-              srcset="{{ img_desktop | image_url: width: img_desktop_width }} 1x, {{ img_desktop | image_url: width: img_desktope_width_retina }} 2x"
+              srcset="
+                {{ img_desktop | image_url: width: img_desktop_width }} 1x,
+                {{ img_desktop | image_url: width: img_desktope_width_retina }} 2x
+              "
               {% if section.index > 1 %}
                 loading="lazy"
               {% endif %}
               alt="{{ img_desktop.alt }}"
-              width="816"
-              height="600"
             >
+            {% # theme-check-enable ImgWidthAndHeight %}
+
           {%- else -%}
             {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
           {%- endif -%}

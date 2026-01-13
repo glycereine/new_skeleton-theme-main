@@ -8,5 +8,10 @@
  * ------------------------------------------------------------
  */
 {
-  "current": {}
+  "current": {
+    "type_primary_font": "inter_n4",
+    "min_page_margin": 82,
+    "foreground_color": "#535353",
+    "content_for_index": []
+  }
 }
