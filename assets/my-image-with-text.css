@@ -1,5 +1,6 @@
 :root {
     --color-black: #000;
+    --color-white: #fff;
 }
 
 body {
@@ -13,16 +14,11 @@ section ~ section {
 }
 
 .my-image-with-text {
-    width: 100%;
+    padding: 32px 16px;    
 }
 
 .my-image-with-text__container {
-    display: flex;
-    flex-direction: column;
     margin: 0 auto;
-}
-
-.my-image-with-text__container--width {
     max-width: 1680px;
 }
 
@@ -30,16 +26,22 @@ section ~ section {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     align-items: center;
-    padding: 32px 16px;
     gap: 24px 16px;
 }
 
 .my-image-with-text__media {
+    position: relative;
     width: 100%;
+    height: 0;
     overflow: hidden;
     border-radius: 16px;
+    padding-top: calc((600 / 816) * 100%);
 }
 .my-image-with-text__img {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
     width: 100%;
     object-fit: cover;
 }
@@ -56,11 +58,13 @@ section ~ section {
     font-weight: 500;
     font-size: 38px;
     line-height: 1.211;
+    word-break: break-word;
 }
 
 .my-image-with-text__subheading {
     color: var(--color-black);
     font-weight: 500;
+    word-break: break-word;
 }
 .my-image-with-text__text {
     display: flex;
@@ -78,17 +82,17 @@ section ~ section {
     color: var(--color-black);
     font-weight: 500;
     text-decoration: none;
+    transition: all 300ms ease 0s;
+}
+.my-image-with-text__btn-link:hover {
+    color: var(--color-white);
+    background-color: var(--color-black);
 }
 
 @media (min-width: 992px) {
-    .my-image-with-text__media {
-        max-width: 816px;
-    }
-
     .my-image-with-text__content {
         padding: 24px 48px;
     }
-
     .my-image-with-text__content--revers {
         grid-row: 1;
     }
@@ -97,6 +101,9 @@ section ~ section {
 @media (max-width: 991px) {
     .my-image-with-text__wrapper {
         grid-template-columns: 1fr;
+    }
+    .my-image-with-text__media {
+        padding-top: calc((260 / 343) * 100%);
     }
 
     .my-image-with-text__heading {

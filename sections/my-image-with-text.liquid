@@ -11,40 +11,45 @@
   assign img_desktop = section.settings.image_desktop
   assign img_mobile = section.settings.image_mobile | default: img_desktop
 
-  assign img_mobile_width = 343
-  assign img_mobile_width_retina = img_mobile_width | times: 2
-
-  assign img_desktop_width = 816
-  assign img_desktope_width_retina = img_desktop_width | times: 2
-
   if section.settings.image_position == 'right'
     assign image_revers = 'my-image-with-text__content--revers'
   endif
 -%}
 
 <div class="my-image-with-text">
-  <div class="my-image-with-text__container my-image-with-text__container--width">
+  <div class="my-image-with-text__container">
     <div class="my-image-with-text__wrapper">
       <div class="my-image-with-text__media">
         <picture>
           {%- if img_desktop != blank -%}
-            {%- if img_mobile != blank -%}
-              <source
-                media="(max-width: 991px)"
-                srcset="
-                  {{ img_mobile | image_url: width: img_mobile_width }} 1x,
-                  {{ img_mobile | image_url: width: img_mobile_width_retina }} 2x
-                "
-              >
-            {%- endif -%}
-
+            <source
+              media="(max-width: 420px)"
+              srcset="
+                {{ img_mobile | image_url: width: 388 }} 1x,
+                {{ img_mobile | image_url: width: 776 }} 2x
+              "
+            >
+            <source
+              media="(max-width: 767px) and (min-width: 421px)"
+              srcset="
+                {{ img_mobile | image_url: width: 735 }} 1x,
+                {{ img_mobile | image_url: width: 1470 }} 2x
+              "
+            >
+            <source
+              media="(max-width: 991px) and (min-width: 768px)"
+              srcset="
+                {{ img_mobile | image_url: width: 959 }} 1x,
+                {{ img_mobile | image_url: width: 1918 }} 2x
+              "
+            >
             {% # theme-check-disable ImgWidthAndHeight %}
             <img
               class="my-image-with-text__img"
-              src="{{ img_desktop | image_url: width: img_desktop_width }}"
+              src="{{ img_desktop | image_url: width: 816 }}"
               srcset="
-                {{ img_desktop | image_url: width: img_desktop_width }} 1x,
-                {{ img_desktop | image_url: width: img_desktope_width_retina }} 2x
+                {{ img_desktop | image_url: width: 816 }} 1x,
+                {{ img_desktop | image_url: width: 1632 }} 2x
               "
               {% if section.index > 1 %}
                 loading="lazy"
@@ -54,7 +59,7 @@
             {% # theme-check-enable ImgWidthAndHeight %}
 
           {%- else -%}
-            {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+            {{ 'image' | placeholder_svg_tag: 'my-image-with-text__img' }}
           {%- endif -%}
         </picture>
       </div>
@@ -62,19 +67,19 @@
       <div class="my-image-with-text__content {{ image_revers }}">
         {%- if heading != blank -%}
           <h2 class="my-image-with-text__heading">
-            {{ heading }}
+            {{- heading -}}
           </h2>
         {% endif %}
 
         {% if subheading != blank -%}
           <p class="my-image-with-text__subheading">
-            {{ subheading }}
+            {{- subheading -}}
           </p>
         {% endif %}
 
         {% if text != blank -%}
           <div class="my-image-with-text__text">
-            {{ text }}
+            {{- text -}}
           </div>
         {% endif %}
 
@@ -83,7 +88,7 @@
             href="{{ btn_link }}"
             class="my-image-with-text__btn-link"
           >
-            {{ btn_label }}
+            {{- btn_label -}}
           </a>
         {% endif %}
       </div>
@@ -115,7 +120,8 @@
     {
       "type": "richtext",
       "id": "text",
-      "label": "Text"
+      "label": "Text",
+      "default": "<p>To live inspired, is to live a life true to your values, a life that's meaningful, and a life of purpose. To fill with goodness your body, mind, and soul. To live inspired, is to choose love over fear, to choose compassion, kindness, and joy. To be courageous and tender in the face of life's challenges; and brave and fearless when taking chances. To embrace change and imperfection. To be yourself and to love yourself. To know that even when you make a mistake, you can choose again, and keep moving forward. Always learning, unlearning, evolving, thriving, connecting, creating. To live inspired, is to live a life worth living.</p>"
     },
     {
       "type": "header",
@@ -132,7 +138,6 @@
       "id": "button_link",
       "label": "Button link"
     },
-
     {
       "type": "header",
       "content": "Image",
@@ -173,10 +178,6 @@
       "name": "My image with text",
       "category": "Custom Sections",
       "settings": {
-        "heading": "What does it mean to Live Inspired?",
-        "subheading": "Our Story",
-        "text": "<p>To live inspired, is to live a life true to your values, a life that’s meaningful, and a life of purpose. To fill with goodness your body, mind, and soul. To live inspired, is to choose love over fear, to choose compassion, kindness, and joy. To be courageous and tender in the face of life’s challenges; and brave and fearless when taking chances. To embrace change and imperfection. To be yourself and to love yourself. To know that even when you make a mistake, you can choose again, and keep moving forward. Always learning, unlearning, evolving, thriving, connecting, creating. To live inspired, is to live a life worth living.</p>",
-        "button_label": "Read Our Story",
         "button_link": "#"
       }
     }
