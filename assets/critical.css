@@ -68,3 +68,30 @@ body {
   background-color: var(--color-background);
   color: var(--color-foreground);
 }
+
+
+
+
+
+fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+code {
+    display: block;
+    background: rgb(0, 0, 0);
+    color: yellow;
+    border-radius: 10px;
+    padding: 8px 16px;
+    border: 1px solid rgb(237, 39, 39);
+    resize: vertical;
+    overflow: auto;
+    margin: 14px 0;
+    word-break: break-all;
+    /* height: 45px; */
+}
+code::selection {
+    background-color: blue;
+}

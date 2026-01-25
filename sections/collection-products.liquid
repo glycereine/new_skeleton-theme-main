@@ -1,211 +1,515 @@
+{%- liquid
+  assign collection = collections[section.settings.collection]
+  assign collection_cusstom_banner = section.settings.collection_custom_image
+  assign collection_banner = collection_cusstom_banner | default: collection.featured_image
+-%}
+
+{% if collection.products_count > 1 %}
+  {{ 'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css' | stylesheet_tag }}
+{% endif %}
 {{ 'collection-products.css' | asset_url | stylesheet_tag }}
-{{ 'cart-notification.css' | asset_url | stylesheet_tag }}
 
-{% liquid
-  assign collection = section.settings.collection
-  assign collection_title = section.settings.collection.title
-%}
+<section class="collection-products" id="collection-products-{{ section.id}}">
+  <div class="collection-products__container">
+    <div class="collection-products__wrapper">
+      <div class="collection-products__banner">
+        <picture>
+          {%- if collection_banner != blank -%}
+            <source
+              media="(max-width: 375px)"
+              srcset="
+                {{ collection_banner | image_url: width: 343 }} 1x,
+                {{ collection_banner | image_url: width: 686 }} 2x
+              "
+            >
 
-<section class="collection-products js-collection-products">
-  <div class="collection-products__wrapper">
-    <div class="collection-products__banner">
-      {% assign collection_banner = section.settings.collection_custom_image | default: collection.featured_image %}
+            <source
+              media="(max-width: 767px)"
+              srcset="
+                {{ collection_banner | image_url: width: 735 }} 1x,
+                {{ collection_banner | image_url: width: 1470 }} 2x
+              "
+            >
 
-      {% if collection_banner != blank %}
-        <picture class="collection-products__banner-picture">
-          <source
-            media="(max-width: 420px)"
-            srcset="
-              {{ collection_banner | image_url: height: 500 }} 1x,
-              {{ collection_banner | image_url: height: 1000 }} 2x
-            "
-            type="image/webp"
-          >
+            <source
+              media="(max-width: 991px)"
+              srcset="
+                {{ collection_banner | image_url: width: 959 }} 1x,
+                {{ collection_banner | image_url: width: 1918 }} 2x
+              "
+            >
 
-          <source
-            media="(max-width: 991px)"
-            srcset="
-              {{ collection_banner | image_url: height: 600 }} 1x,
-              {{ collection_banner | image_url: height: 1200 }} 2x
-            "
-            type="image/webp"
-          >
-
-          <img
-            class="collection-products__banner-image"
-            src="{{ collection_banner | image_url: height: 600 }}"
-            srcset="
-              {{ collection_banner | image_url: height: 600 }} 1x,
-              {{ collection_banner | image_url: height: 1200 }} 2x
-            "
-            alt="{{ section.settings.collection.image.alt | escape }}"
-            {% if section.index > 1 %}
-              loading="lazy"
-            {% endif %}
-            width="400"
-            height="582"
-          >
+            {% # theme-check-disable ImgWidthAndHeight %}
+            <img
+              class="collection-products__banner-img"
+              srcset="
+                {{ collection_banner | image_url: width: 400 }} 1x,
+                {{ collection_banner | image_url: width: 800 }} 2x
+              "
+              src="{{ collection_banner | image_url: width: 400 }}"
+              {% if section.index > 1 %}
+                loading="lazy"
+              {% endif %}
+              alt="{{- collection_banner.alt -}}"
+            >
+            {% # theme-check-enable ImgWidthAndHeight %}
+          {% else %}
+            {{ 'collection-apparel-1' | placeholder_svg_tag: 'collection-products__banner-img' }}
+          {% endif %}
         </picture>
-      {% else %}
-        <div class="collection-products__banner-placeholder">
-          {{ 'collection-apparel-1' | placeholder_svg_tag: 'collection-products__banner-placeholder-svg' }}
+        <div class="collection-products__overlay">
+          <h2 class="collection-products__overlay-title">{{- collection.title -}}</h2>
+          <p class="collection-products__overlay-count">
+            {{- collection.all_products_count }}
+            {{- collection.all_products_count | pluralize: 'product', 'products' -}}
+          </p>
         </div>
-      {% endif %}
-
-      <div class="collection-products__banner-info">
-        {% if collection_title != blank %}
-          <h2 class="collection-products__banner-title">{{ collection_title }}</h2>
-        {% endif %}
-
-        {% assign count = section.settings.collection.all_products_count %}
-
-        {% if count > 0 %}
-          <span class="collection-products__banner-count">
-            {{ count }}
-            {{ count | pluralize: 'product', 'products' }}
-          </span>
-        {% endif %}
       </div>
-    </div>
 
-    {% assign collection_products = section.settings.collection.products | default: collections.all.products %}
+      <div class="collection-products__list {% if collection.products.size > 1 %}swiper swiper-{{ section.id}}{% endif %}">
+        <div
+          class="collection-products__list-wrapper swiper-wrapper js-product-list-wrapper"
+          data-section-id="{{ section.id }}"
+        >
+          {% for product in collection.products %}
+            <div class="swiper-slide collection-products__product-card js-product-card">
+              {% liquid
+                assign product_option = product.options_by_name.color
+                assign current_variant = product.selected_or_first_available_variant
+                assign product_image = current_variant.featured_image | default: product.featured_image
+                assign product_apparel_1_svg = 'product-apparel-1' | placeholder_svg_tag: 'collection-products__product-card__img'
+              %}
 
-    {% if collection_products %}
-      <div class="collection-products__list swiper">
-        <div class="swiper-wrapper">
-          {% for product in collection_products %}
-            <div class="collection-products__item swiper-slide js-collection-products-item">
-              <div class="collection-products__item-image-wrapper">
-                {% if product.tags.size > 0 %}
-                  <div class="collection-products__item-tags">
+              <div class="collection-products__product-media">
+                <a class="collection-products__product-card__link" href="{{- product.url -}}">
+                  <picture>
+                    {%- if product_image != blank -%}
+                      <source
+                        data-size="375"
+                        media="(max-width: 375px)"
+                        srcset="
+                          {{ product_image | image_url: width: 163.5 }} 1x,
+                          {{ product_image | image_url: width: 327 }} 2x
+                        "
+                      >
+                      <source
+                        data-size="767"
+                        media="(max-width: 767px)"
+                        srcset="
+                          {{ product_image | image_url: width: 359.5 }} 1x,
+                          {{ product_image | image_url: width: 719 }} 2x
+                        "
+                      >
+                      <source
+                        data-size="991"
+                        media="(max-width: 991px)"
+                        srcset="
+                          {{ product_image | image_url: width: 471.5 }} 1x,
+                          {{ product_image | image_url: width: 943 }} 2x
+                        "
+                      >
+
+                      {% # theme-check-disable ImgWidthAndHeight %}
+                      <img
+                        class="collection-products__product-card__img"
+                        srcset="
+                          {{ product_image | image_url: width: 400 }} 1x,
+                          {{ product_image | image_url: width: 800 }} 2x
+                        "
+                        src="{{- product_image | image_url: width: 400 -}}"
+                        {% if section.index > 1 %}
+                          loading="lazy"
+                        {% endif %}
+                        alt="{{- product_image.alt -}}"
+                      >
+                      {% # theme-check-enable ImgWidthAndHeight %}
+
+                    {%- else -%}
+                      {{ product_apparel_1_svg }}
+                    {%- endif -%}
+
+                    <div class="collection-products__product-card__placeholder is-hidden">
+                      {{ product_apparel_1_svg }}
+                    </div>
+                  </picture>
+                </a>
+
+                {%- if product.tags.size > 0 -%}
+                  <div class="collection-products__tags">
                     {% for tag in product.tags %}
-                      {% assign sale_class = tag | downcase %}
+                      {% assign tag_downcase = tag | downcase %}
 
-                      <span class="collection-products__item-tag {% if sale_class contains 'sale' %}collection-products__item-tag--sale{% endif %}">
-                        {{ tag | capitalize }}
-                      </span>
-                    {% endfor %}
-                  </div>
-                {% endif %}
-
-                <div class="collection-products__item-actions">
-                  <button
-                    class="collection-products__item-action js-add-to-cart"
-                    aria-label="Add to cart"
-                    data-variant-id="{{ product.selected_or_first_available_variant.id }}"
-                    data-available-quantity="{{ product.selected_or_first_available_variant.inventory_quantity }}"
-                    {% unless product.selected_or_first_available_variant.available %}
-                      disabled
-                    {% endunless %}
-                  ></button>
-                </div>
-
-                <a class="collection-products__item-link" href="{{ product.url }}">
-                  {% assign color_option = product.options_by_name.Color | default: product.options_by_name.Colour %}
-
-                  {% if color_option %}
-                    {% for value in color_option.values %}
-                      {% assign variant_image = value.variant.image %}
-
-                      {% if variant_image %}
-                        <picture
-                          class="collection-products__item-picture js-collection-products-item-picture {% unless forloop.first %}hidden{% endunless %}"
-                          data-variant-id="{{ value.variant.id }}"
-                        >
-                          {% render 'collection-product-picture', image: variant_image %}
-                        </picture>
+                      {% if tag_downcase contains 'sale' %}
+                        {% assign sail_tag_downcase = tag %}
+                        {% continue %}
                       {% else %}
-                        <div
-                          class="collection-products__item-placeholder js-collection-products-item-picture {% unless forloop.first %}hidden{% endunless %}"
-                          data-variant-id="{{ value.variant.id }}"
-                        >
-                          {{ 'product-apparel-2' | placeholder_svg_tag: 'collection-products__item-placeholder-svg' }}
-                        </div>
+                        <span class="collection-products__badge badge--default">{{- tag_downcase | capitalize -}}</span>
                       {% endif %}
                     {% endfor %}
 
-                  {% elsif product.featured_image %}
-                    <picture class="collection-products__item-picture js-collection-products-item-picture">
-                      {% render 'collection-product-picture', image: product.featured_image %}
-                    </picture>
+                    {% if sail_tag_downcase != blank
+                      and current_variant.compare_at_price != blank
+                      and current_variant.compare_at_price > current_variant.price
+                    %}
+                      <span class="collection-products__badge badge--sale">
+                        {{- sail_tag_downcase | capitalize -}}
+                      </span>
+                    {% endif %}
+                  </div>
+                {%- endif -%}
 
-                  {% else %}
-                    <div class="collection-products__item-placeholder">
-                      {{ 'product-apparel-1' | placeholder_svg_tag: 'collection-products__item-placeholder-svg' }}
-                    </div>
-                  {% endif %}
-                </a>
+                <div class="collection-products__actions">
+                  <button
+                    class="collection-products__actions__button"
+                    aria-label="Quick view"
+                  >
+                    {% render 'icon-quick-view' %}
+                  </button>
+                </div>
               </div>
 
-              {% if color_option %}
-                <div class="collection-products__item-swatches js-color-swatch">
-                  {% for value in color_option.values %}
+              {%- if product_option != blank -%}
+                <div class="collection-products__swatches">
+                  {% for product_option_value in product_option.values %}
+                    {% assign product_variant_image = product_option_value.variant.featured_image
+                      | default: product.featured_image
+                    %}
+
+                    {%- if product_variant_image != blank -%}
+                      {%- capture variant_json -%}
+                        {
+                          "s375": "{{ product_variant_image | image_url: width: 163 }} 1x, {{ product_variant_image | image_url: width: 327 }} 2x",
+                          "s767": "{{ product_variant_image | image_url: width: 360 }} 1x, {{ product_variant_image | image_url: width: 720 }} 2x",
+                          "s991": "{{ product_variant_image | image_url: width: 472 }} 1x, {{ product_variant_image | image_url: width: 944 }} 2x",
+                          "default": "{{ product_variant_image | image_url: width: 400 }} 1x, {{ product_variant_image | image_url: width: 800 }} 2x",
+                          "src": "{{ product_variant_image | image_url: width: 400 }}"
+                        }
+                      {%- endcapture -%}
+                    {%- endif -%}
+
                     <button
-                      class="collection-products__item-swatch js-color-swatch-item {% if forloop.first %}is-active{% endif %}"
                       type="button"
-                      aria-label="{{ value.name }}"
-                      data-variant-id="{{ value.variant.id }}"
-                      data-variant-price="{{ value.variant.price | money }}"
-                      data-variant-quantity="{{ value.variant.inventory_quantity }}"
-                      data-variant-compare-price="{{ value.variant.compare_at_price | money }}"
+                      class="js-btn-swatch collection-products__btn-swatch {% if forloop.first %}is--active{% endif %}"
+                      data-id="{{ product_option_value.variant.id }}"
+                      {%- if product_variant_image != blank -%}
+                        data-variant-images="{{ variant_json | strip_newlines | escape }}"
+                      {%- endif -%}
+                      title="{{ product_option_value.name }}"
                     >
-                      <span
-                        class="collection-products__item-swatch-color"
-                        style="background-color: {{ value.swatch.color }}"
-                      ></span>
+                      {% if product_option_value.swatch.image != blank %}
+                        {{ product_option_value.swatch.image | image_url: width: 12 | image_tag }}
+                      {% else %}
+                        <span style="background-color: {{ product_option_value.swatch.color }}"></span>
+                      {% endif %}
                     </button>
-                  {% endfor %}
+                  {%- endfor -%}
                 </div>
-              {% endif %}
+              {%- endif -%}
 
-              <a class="collection-products__item-link" href="{{ product.url }}">
-                <h3 class="collection-products__item-title">{{ product.title }}</h3>
-              </a>
+              <h3 class="collection-products__product-card__title">
+                <a class="collection-products__product-card__title-link" href="{{- product.url -}}">
+                  {{- product.title -}}
+                </a>
+              </h3>
 
-              {% liquid
-                assign price_source = product
+              <div class="collection-products__price">
+                {%- assign current_variant = product.selected_or_first_available_variant %}
+                {% if current_variant.compare_at_price != blank
+                  and current_variant.compare_at_price > current_variant.price
+                %}
+                  <span class="collection-products__price--sale">
+                    {{- current_variant.price | money -}}
+                  </span>
+                  <span class="collection-products__price--compare">
+                    {{- current_variant.compare_at_price | money -}}
+                  </span>
 
-                if color_option
-                  assign price_source = product.selected_or_first_available_variant
-                endif
-              %}
-
-              <div class="collection-products__item-price-info">
-                <span class="collection-products__item-price js-collection-products-item-price">
-                  {{ price_source.price | money }}
-                </span>
-
-                {% if price_source.compare_at_price %}
-                  <span class="collection-products__item-price collection-products__item-price--old js-collection-products-compare-price">
-                    {{ price_source.compare_at_price | money }}
+                {% else %}
+                  <span>
+                    {{- current_variant.price | money -}}
                   </span>
                 {% endif %}
               </div>
+
+              {% comment %} CODE debugger: {% endcomment %}
+              {% comment %} <div class="collection-products__swatches" style="flex-direction: column; gap: 14px;">
+                {% for product_option_value in product_option.values %}
+                  {% assign product_variant_image = product_option_value.variant.featured_image
+                    | default: product.featured_image
+                  %}
+                  <fieldset>
+                    <ul>
+                      <li
+                        class="collection-products__btn-swatch {% if forloop.first %}is--active{% endif %}"
+                      >
+                        <span style="background-color: {{ product_option_value.swatch.color }}">
+                          {{ product_option.name }}
+                        </span>
+                      </li>
+                    </ul>
+                    <ul>
+                      <li>product_option.name: {{ product_option.name }}</li>
+                      <li>product_option.position: {{ product_option.position }}</li>
+                      <li>product_option.selected_value: {{ product_option.selected_value }}</li>
+                    </ul>
+                    <ul>
+                      <li>value.name: {{ product_option_value.name }}</li>
+                      <li>value.selected: {{ product_option_value.selected }}</li>
+                    </ul>
+                    <ul>
+                      <li>variant.available: {{ product_option_value.variant.available }}</li>
+                      <li>variant.id: {{ product_option_value.variant.id }}</li>
+                      <li>variant.selected: {{ product_option_value.variant.selected }}</li>
+                    </ul>
+                    <ul>
+                      <li>
+                        variant.featured_image:<br>
+                        <p>{{ product_variant_image | image_url: width: 100 | image_tag -}}</p>
+                        <code>
+                          {{ product_variant_image | image_url: width: 400 }}
+                        </code>
+                      </li>
+                    </ul>
+                    <ul>
+                      <li>variant.price: {{ product_option_value.variant.price }}</li>
+                      <li>variant.compare_at_price: {{ product_option_value.variant.compare_at_price }}</li>
+                    </ul>
+                    <ul>
+                      <li>swatch.color: {{ product_option_value.swatch.color }}</li>
+                    </ul>
+                  </fieldset>
+                {%- endfor -%}
+              </div> {% endcomment %}
+
             </div>
           {% endfor %}
         </div>
 
-        <div class="swiper-pagination"></div>
-        <div class="swiper-button-prev"></div>
-        <div class="swiper-button-next"></div>
+        {%- if collection.products_count > 0 -%}
+          <div class="swiper-pagination"></div>
+          <div class="swiper-button swiper-button-prev">
+            {% render 'icon-arrow-left' %}
+          </div>
+          <div class="swiper-button swiper-button-next">
+            {% render 'icon-arrow-right' %}
+          </div>
+        {% endif %}
       </div>
-    {% endif %}
+    </div>
   </div>
 </section>
 
-<script src="{{ 'collection-products.js' | asset_url }}" defer></script>
-<script src="{{ 'add-to-cart.js' | asset_url }}" defer></script>
+{% if collection.products_count > 1 %}
+  <script src="https://cdn.jsdelivr.net/npm/swiper@12.0.0/swiper-bundle.min.js" defer></script>
+{% endif %}
 
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css"
->
+<script>
+  // collection-products v3:
+  (function () {
+    const SECTION_ID = '{{ section.id }}';
 
-<script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
+    const SELECTORS = {
+      collectionProducts: 'js-product-list-wrapper',
+      productCard: 'collection-products__product-card',
+      productImage: 'collection-products__product-card__img',
+      btnSwatch: 'js-btn-swatch',
+      isActive: 'is--active',
+      swiperContainer: 'swiper-{{ section.id }}',
+    };
+
+    function updateProductCard(currentCard, newStates) {
+      const elements = {
+        currentImage: currentCard.querySelector(`.${SELECTORS.productImage}`),
+      };
+      try {
+        if (newStates.imagesData && elements.currentImage) {
+          const sources = elements.currentImage.parentElement.querySelectorAll('source');
+          sources.forEach((source) => {
+            const sizeKey = 's' + source.dataset.size;
+            if (newStates.imagesData[sizeKey]) {
+              source.srcset = newStates.imagesData[sizeKey];
+            }
+          });
+
+          elements.currentImage.srcset = newStates.imagesData.default || elements.currentImage.srcset;
+          elements.currentImage.src = newStates.imagesData.src || elements.currentImage.src;
+
+          console.log('Images updated from JSON object');
+        }
+      } catch (error) {
+        console.error('Error updating product card:', error);
+      }
+    }
+
+    function handleSwatchClick(currentBtn) {
+      const currentCard = currentBtn.closest(`.${SELECTORS.productCard}`);
+      console.log('handleSwatchClick currentCard:', currentCard);
+      if (!currentCard) return;
+
+      //if (currentBtn.classList.contains(SELECTORS.isActive)) return;
+
+      const oldActiveBtn = currentCard.querySelector(`.${SELECTORS.btnSwatch}.${SELECTORS.isActive}`);
+
+      if (oldActiveBtn) {
+        oldActiveBtn.classList.remove(SELECTORS.isActive);
+      }
+      currentBtn.classList.add(SELECTORS.isActive);
+
+      if (!currentBtn.dataset.variantImages) {
+        console.log('No dataset.variantImages !');
+        return;
+      }
+
+      try {
+        const newStates = {
+          imagesData: JSON.parse(currentBtn.dataset.variantImages),
+        };
+        updateProductCard(currentCard, newStates);
+      } catch (e) {
+        console.error('JSON parse error:', e);
+      }
+    }
+
+    function initProductCards() {
+      const collectionProducts = document.querySelector(
+        `.${SELECTORS.collectionProducts}[data-section-id="${SECTION_ID}"]`
+      );
+      if (!collectionProducts) return;
+
+      collectionProducts.addEventListener('click', function (event) {
+        const currentBtnSwatch = event.target.closest(`.${SELECTORS.btnSwatch}`);
+        console.log('currentBtnSwatch: ', currentBtnSwatch);
+
+        if (currentBtnSwatch) {
+          handleSwatchClick(currentBtnSwatch);
+          return;
+        }
+      });
+
+      const swiperElement = document.querySelector(`.${SELECTORS.swiperContainer}`);
+
+      const swiperSettings = {
+        loop: true,
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+        },
+        spaceBetween: 16,
+
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev',
+        },
+
+        breakpoints: {
+          320: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          991: { slidesPerView: 2 },
+          1199: { slidesPerView: 3 },
+        },
+      };
+
+      if (swiperElement && typeof Swiper !== 'undefined') {
+        const swiper = new Swiper(swiperElement, swiperSettings);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initProductCards();
+    });
+  })();
+</script>
+
+{% comment %}
+  <script>
+  // old version:
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+      const swatchButton = document.querySelector('.js-btn-swatch');
+
+      document.querySelector('.js-product-list-wrapper').addEventListener('click', function (e) {
+        const currentButton = e.target.closest('.js-btn-swatch');
+        console.log('currentButton: ', currentButton);
+        if (!currentButton) return;
+
+        const currentCard = currentButton.closest('.collection-products__product-card');
+        const oldActiveButton = currentCard?.querySelector('.js-btn-swatch.is--active');
+
+        if (oldActiveButton) {
+          oldActiveButton.classList.remove('is--active');
+        }
+        currentButton.classList.add('is--active');
+
+        if (!currentButton.dataset.variantImages) {
+          console.log('No dataset.variantImages !');
+          return;
+        }; // todo: вывести плейсхолдер?
+
+        try {
+          const images = JSON.parse(currentButton.dataset.variantImages);
+
+          const currentCard = currentButton.closest('.collection-products__product-card');
+          const picture = currentCard.querySelector('picture');
+          const img = currentCard.querySelector('.collection-products__product-card__img');
+
+          if (images && img) {
+
+            const sources = picture.querySelectorAll('source');
+            sources.forEach(source => {
+              const key = 's' + source.dataset.size;
+
+              if (images[key]) {
+                source.srcset = images[key];
+              }
+            });
+
+            img.srcset = images.default;
+            img.src = images.src;
+
+            console.log('Images updated from JSON object');
+          }
+
+        } catch (err) {
+          console.error("Ошибка в JSON:", err);
+        }
+
+      });
+
+      const swiper = new Swiper('.swiper-{{ section.id }}', {
+        loop: true,
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+        },
+        spaceBetween: 16,
+
+        navigation: {
+          nextEl: '.swiper-button-next',
+          prevEl: '.swiper-button-prev',
+        },
+
+        breakpoints: {
+          320: { slidesPerView: 2 },
+          768: { slidesPerView: 3 },
+          991: { slidesPerView: 2 },
+          1199: { slidesPerView: 3 },
+        },
+      });
+
+    });
+  </script>
+{% endcomment %}
 
 {% schema %}
 {
   "name": "Collection products",
+  "tag": "section",
+  "class": "section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+
   "settings": [
     {
       "type": "collection",
@@ -218,10 +522,14 @@
       "label": "Collection custom image"
     }
   ],
+
   "presets": [
     {
       "name": "Collection products",
-      "category": "Custom Sections"
+      "category": "Custom Sections",
+      "settings": {
+        "collection": "Talismans"
+      }
     }
   ]
 }
