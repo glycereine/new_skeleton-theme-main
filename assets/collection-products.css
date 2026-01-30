@@ -107,6 +107,10 @@
     border-radius: 16px;
 }
 
+.collection-products__product-card__picture:not(.is--visible) {
+    display: none;
+}
+
 .collection-products__product-card__img {
     aspect-ratio: 1;
     width: 100%;
@@ -296,6 +300,9 @@
     background: var(--color-black) !important;
 }
 
+
+.swiper:not(.swiper-initialized) .swiper-button-next,
+.swiper:not(.swiper-initialized) .swiper-button-prev,
 .swiper-button-next.swiper-button-lock,
 .swiper-button-prev.swiper-button-lock {
   display: none !important;

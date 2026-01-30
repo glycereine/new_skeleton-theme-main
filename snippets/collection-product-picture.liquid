@@ -1,0 +1,64 @@
+{% comment %}
+  Collection Products Picture Snippet
+
+  @param {Image} image - The image object to display.
+  @param {String} picture_class - Additional CSS classes for the <picture> element.
+  @param {String} image_class - Additional CSS classes for the <img> element.
+  @param {Number} image_width - The width of the image to be displayed.
+  @param {String} source_responsive_widths - Comma-separated list of widths for responsive images.
+  @param {String} source_media_queries - Comma-separated list of media queries corresponding to responsive widths.
+  @param {String} variant_id - The variant ID associated with the image.
+  @param {Boolean} is_first - Flag to indicate if this is the first image (for visibility purposes).
+{% endcomment %}
+
+<picture
+  {% if variant_id != blank %}
+    data-variant-id="{{ variant_id }}"
+  {% endif %}
+  {%- if picture_class != blank or is_first != blank -%}
+    class="{{ picture_class }} {% if is_first %}is--visible{% endif %}"
+  {% endif %}
+>
+  {%- if image != blank -%}
+    {% assign image_width = image_width | default: 400 %}
+    {% assign image_class = image_class %}
+
+    {% assign responsive_widths = source_responsive_widths | split: ',' %}
+    {% assign media_queries = source_media_queries | split: ',' %}
+
+    {%- if responsive_widths != blank and media_queries != blank -%}
+      {% for responsive_width in responsive_widths %}
+        {% assign i = forloop.index0 %}
+
+        {% assign retina_width = responsive_width | times: 2 %}
+        <source
+          media="{{ media_queries[i] }}"
+          srcset="
+            {{ image | image_url: width: responsive_width }} 1x,
+            {{ image | image_url: width: retina_width }} 2x
+          "
+        >
+      {% endfor %}
+    {% endif %}
+
+    {% # theme-check-disable ImgWidthAndHeight %}
+    {% assign image_retina_width = image_width | times: 2 %}
+    <img
+      {% if image_class != blank%}
+        class="{{ image_class }}"
+      {% endif %}
+      srcset="
+        {{ image | image_url: width: image_width }} 1x,
+        {{ image | image_url: width: image_retina_width }} 2x
+      "
+      src="{{- image | image_url: width: image_width -}}"
+      {% if section.index > 1 %}
+        loading="lazy"
+      {% endif %}
+      alt="{{- image.alt -}}"
+    >
+    {% # theme-check-enable ImgWidthAndHeight %}
+  {%- else -%}
+    {{ 'product-apparel-1' | placeholder_svg_tag: image_class }}
+  {%- endif -%}
+</picture>
