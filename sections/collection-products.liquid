@@ -27,6 +27,9 @@
               {{- selected_collection.all_products_count }}
               {{- selected_collection.all_products_count | pluralize: 'product', 'products' -}}
             </p>
+
+            <button class="collection-products__btn btn---cart-status">Cart Status: (console)</button>
+            <button class="collection-products__btn btn---cart-cleared">Cart Cleared: (console)</button>
           </div>
         </div>
 
@@ -133,11 +136,6 @@
                   </div>
                 {%- endif -%}
 
-                {% for color_value in color_option.values %}
-                  {{ color_value.variant.id }}, {{ color_value.name }}, {{ color_value.variant.available }}
-                  <br>
-                {%- endfor -%}
-
                 <h3 class="collection-products__product-card__title">
                   <a class="collection-products__product-card__title-link" href="{{- product.url -}}">
                     {{- product.title -}}
@@ -158,6 +156,32 @@
                     {{- featured_variant.price | money -}}
                   {% endif %}
                 </div>
+
+                {% for color_value in color_option.values %}
+                  <details>
+                    <summary>Цвет: {{ color_value.name }}</summary>
+                    <ul>
+                      <li>ID: {{ color_value.variant.id }}</li>
+                      <li>Доступен: {{ color_value.variant.available }}</li>
+                      <li>Количество: {{ color_value.variant.inventory_quantity }}</li>
+                      <li>Incoming: {{ color_value.variant.incoming }}</li>
+                      <li>Next incoming date: {{ color_value.variant.next_incoming_date }}</li>
+                      <li>Цена: {{ color_value.variant.price }}</li>
+                      <li>Старая: {{ color_value.variant.compare_at_price }}</li>
+                      <li>
+                        Картинка:
+                        <p>
+                          {{
+                            color_value.variant.featured_image
+                            | default: product.featured_image
+                            | image_url: width: 100
+                            | image_tag
+                          }}
+                        </p>
+                      </li>
+                    </ul>
+                  </details>
+                {%- endfor -%}
               </div>
             {% endfor %}
           </div>
@@ -197,6 +221,8 @@
         priceSale: 'collection-products__price--sale',
         priceCompare: 'collection-products__price--compare',
         swiperContainer: `swiper-${SECTION_ID}`,
+        checkCartStatusBtn: 'btn---cart-status',
+        checkCartClearedBtn: 'btn---cart-cleared',
       };
 
       function updateProductCard(newStates, currentCard) {
@@ -274,8 +300,21 @@
 
       function addToCartHandler(currentAddToCart) {
         try {
-          const variantID = currentAddToCart.dataset.cartId;
-          console.log(`Added to cart! Variant ID: ${variantID}`);
+          const variantIdData = currentAddToCart.dataset.cartId;
+          console.log(`Added to cart! Variant ID: ${variantIdData}`);
+
+          if (variantIdData) {
+            let formData = {
+              items: [
+                {
+                  id: parseInt(variantIdData),
+                  quantity: 1,
+                },
+              ],
+            };
+
+            fetchAddToCart(variantIdData, formData, currentAddToCart);
+          }
         } catch (error) {
           console.warn('⚠️ Ошибка селектора в addToCartHandler:', error.message);
         }
@@ -300,6 +339,20 @@
               addToCartHandler(currentAddToCart);
             }
           });
+
+          const checkCartStatusBtn = document.querySelector(`.${SELECTORS.checkCartStatusBtn}`);
+          if (checkCartStatusBtn) {
+            checkCartStatusBtn.addEventListener('click', function () {
+              fetchCheckCart();
+            });
+          }
+
+          const checkCartClearedBtn = document.querySelector(`.${SELECTORS.checkCartClearedBtn}`);
+          if (checkCartClearedBtn) {
+            checkCartClearedBtn.addEventListener('click', function () {
+              fetchClearCart();
+            });
+          }
 
           const swiperElement = document.querySelector(`.${SELECTORS.swiperContainer}`);
 
@@ -329,6 +382,106 @@
           }
         } catch (error) {
           console.warn('⚠️ Ошибка инициализации карточек товаров:', error.message);
+        }
+      }
+
+      async function fetchAddToCart(variantIdData, formData, currentAddToCart) {
+        console.log('>> Sending to Shopify:', JSON.stringify(formData));
+
+        if (currentAddToCart?.classList.contains('cart--adding')) return;
+
+        currentAddToCart?.classList.add('cart--adding');
+
+        try {
+          const response = await fetch(window.Shopify.routes.root + 'cart/add.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            if (response.status === 409) {
+              alert('Ой, секунду');
+            }
+
+            console.error('!response.ok, start: ❌ Shopify Error:', data);
+
+            const errorMsg = data.message || `Error ${response.status}`;
+            alert(`❌ ${errorMsg}`);
+            throw new Error(errorMsg);
+          }
+
+          console.log('✅ Add to cart successful:', data);
+          const cartSummary = (data.items || []).map((item) => ({
+            id: item.id,
+            title: item.title,
+            price: item.price,
+            quantity: item.quantity,
+          }));
+          console.log(cartSummary);
+          return data;
+        } catch (error) {
+          console.error('catch: ❌ Fetch error:', error.message || error);
+          return null;
+        } finally {
+          currentAddToCart?.classList.remove('cart--adding');
+        }
+      }
+
+      async function fetchCheckCart() {
+        try {
+          const response = await fetch(window.Shopify.routes.root + 'cart.js', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          const data = await response.json();
+
+          if (!response.ok) {
+            console.error('❌ Shopify Error:', data);
+            const errorMsg = data.message || `Error ${response.status}`;
+            alert(`❌ ${errorMsg}`);
+            throw new Error(errorMsg);
+          }
+          console.log('✅ Cart status fetched:', data);
+          const cartSummary = (data.items || []).map((item) => ({
+            id: item.id,
+            title: item.title,
+            price: item.price,
+            quantity: item.quantity,
+          }));
+          console.log(cartSummary);
+          return data;
+        } catch (error) {
+          console.error('catch: ❌ Fetch error:', error.message || error);
+          return null;
+        }
+      }
+
+      async function fetchClearCart() {
+        try {
+          const response = await fetch(window.Shopify.routes.root + 'cart/clear.js', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            console.error('❌ Shopify Error:', data);
+            const errorMsg = data.message || `Error ${response.status}`;
+            throw new Error(errorMsg);
+          }
+          console.log('✅ Cart cleared:', data);
+          return data;
+        } catch (error) {
+          console.error('catch: ❌ Fetch error:', error.message || error);
+          return null;
         }
       }
 
