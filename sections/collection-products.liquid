@@ -1,192 +1,86 @@
 {% if section.settings.collection != blank %}
   {%- liquid
-    assign selected_collection = section.settings.collection
+    assign collection = section.settings.collection
     assign collection_custom_banner = section.settings.collection_custom_image
-    assign collection_banner = collection_custom_banner | default: selected_collection.image
+    assign collection_banner = collection_custom_banner | default: collection.image
   -%}
 
-  {% if selected_collection.all_products_count > 2 %}
+  {% if collection.all_products_count > 2 %}
     {{ 'https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css' | stylesheet_tag }}
   {% endif %}
   {{ 'collection-products.css' | asset_url | stylesheet_tag }}
 
-  <section class="collection-products">
+  <section class="collection-products" id="{{ section.id }}">
     <div class="collection-products__container">
       <div class="collection-products__wrapper">
         <div class="collection-products__banner">
-          {% render 'collection-product-picture',
-            image: collection_banner,
-            image_class: 'collection-products__banner-img',
-            source_responsive_widths: '343,735,959',
-            source_media_queries: '(max-width: 375px),(max-width: 767px),(max-width: 991px)'
-          %}
+          <picture>
+            {%- if collection_banner != blank -%}
+              <source
+                media="(max-width: 375px)"
+                srcset="
+                  {{ collection_banner | image_url: width: 343 }} 1x,
+                  {{ collection_banner | image_url: width: 686 }} 2x
+                "
+              >
+
+              <source
+                media="(max-width: 767px)"
+                srcset="
+                  {{ collection_banner | image_url: width: 735 }} 1x,
+                  {{ collection_banner | image_url: width: 1470 }} 2x
+                "
+              >
+
+              <source
+                media="(max-width: 991px)"
+                srcset="
+                  {{ collection_banner | image_url: width: 959 }} 1x,
+                  {{ collection_banner | image_url: width: 1918 }} 2x
+                "
+              >
+
+              {% # theme-check-disable ImgWidthAndHeight %}
+              <img
+                class="collection-products__banner-img"
+                srcset="
+                  {{ collection_banner | image_url: width: 400 }} 1x,
+                  {{ collection_banner | image_url: width: 800 }} 2x
+                "
+                src="{{ collection_banner | image_url: width: 400 }}"
+                {% if section.index > 1 %}
+                  loading="lazy"
+                {% endif %}
+                alt="{{- collection_banner.alt -}}"
+              >
+              {% # theme-check-enable ImgWidthAndHeight %}
+            {% else %}
+              {{ 'collection-apparel-1' | placeholder_svg_tag: 'collection-products__banner-img' }}
+            {% endif %}
+          </picture>
 
           <div class="collection-products__overlay">
-            <h2 class="collection-products__overlay-title">{{- selected_collection.title -}}</h2>
+            <h2 class="collection-products__overlay-title">{{- collection.title -}}</h2>
             <p class="collection-products__overlay-count">
-              {{- selected_collection.all_products_count }}
-              {{- selected_collection.all_products_count | pluralize: 'product', 'products' -}}
+              {{- collection.all_products_count }}
+              {{- collection.all_products_count | pluralize: 'product', 'products' -}}
             </p>
-
-            <button class="collection-products__btn btn---cart-status">Cart Status: (console)</button>
-            <button class="collection-products__btn btn---cart-cleared">Cart Cleared: (console)</button>
           </div>
         </div>
 
         <div
-          class="collection-products__list {% if selected_collection.all_products_count > 2 %}swiper swiper-{{ section.id}}{% endif %} js-product-list"
+          class="js-products-list collection-products__list {% if collection.all_products_count > 2 %}swiper js-swiper-{{ section.id}}{% endif %} js-product-list"
           data-section-id="{{ section.id }}"
         >
-          <div class="collection-products__list-wrapper swiper-wrapper">
-            {% for product in selected_collection.products limit: 20 %}
-              <div class="swiper-slide collection-products__product-card js-product-card">
-                {% liquid
-                  assign color_option = product.options_by_name.color
-                  assign featured_variant = product.selected_or_first_available_variant
-                %}
-
-                <div class="collection-products__product-media">
-                  <a class="collection-products__product-card__link" href="{{- product.url -}}">
-                    {%- if color_option != blank -%}
-                      {% for color_value in color_option.values %}
-                        {% assign product_variant_image = color_value.variant.featured_image
-                          | default: product.featured_image
-                        %}
-                        {% render 'collection-product-picture',
-                          image: product_variant_image,
-                          variant_id: color_value.variant.id,
-                          picture_class: 'collection-products__product-card__picture',
-                          image_class: 'collection-products__product-card__img',
-                          image_width: 400,
-                          source_responsive_widths: '163.5,359.5,471.5',
-                          source_media_queries: '(max-width: 375px),(max-width: 767px),(max-width: 991px)',
-                          is_first: forloop.first
-                        %}
-                      {% endfor -%}
-                    {% else %}
-                      {% render 'collection-product-picture',
-                        image: product.featured_image,
-                        variant_id: product.selected_or_first_available_variant.id,
-                        picture_class: 'collection-products__product-card__picture',
-                        image_class: 'collection-products__product-card__img',
-                        image_width: 400,
-                        source_responsive_widths: '163.5,359.5,471.5',
-                        source_media_queries: '(max-width: 375px),(max-width: 767px),(max-width: 991px)',
-                        is_first: true
-                      %}
-                    {% endif %}
-                  </a>
-
-                  {%- if product.tags.size > 0 -%}
-                    <div class="collection-products__tags">
-                      {% assign get_sail_tag = '' %}
-                      {% for tag in product.tags limit: 5 %}
-                        {% assign tag_downcase = tag | downcase %}
-
-                        {% if tag_downcase contains 'sale' %}
-                          {% assign get_sail_tag = tag %}
-                          {% continue %}
-                        {% else -%}
-                          <span class="collection-products__badge badge--default">
-                            {{- tag_downcase | capitalize -}}
-                          </span>
-                        {%- endif %}
-                      {% endfor %}
-
-                      {% if get_sail_tag != blank
-                        and featured_variant.compare_at_price != blank
-                        and featured_variant.compare_at_price > featured_variant.price
-                      %}
-                        <span class="collection-products__badge badge--sale">
-                          {{- get_sail_tag | capitalize -}}
-                        </span>
-                      {% endif %}
-                    </div>
-                  {%- endif -%}
-
-                  <div class="collection-products__actions">
-                    <button
-                      class="collection-products__actions__button"
-                      data-cart-id="{{ product.selected_or_first_available_variant.id }}"
-                      aria-label="Quick view"
-                    >
-                      {% render 'icon-quick-view' %}
-                    </button>
-                  </div>
-                </div>
-
-                {%- if color_option != blank -%}
-                  <div class="collection-products__swatches">
-                    {% for color_value in color_option.values %}
-                      <button
-                        type="button"
-                        class="js-btn-swatch collection-products__btn-swatch {% if forloop.first %}is--active{% endif %}"
-                        data-variant-id="{{ color_value.variant.id }}"
-                        data-variant-price="{{ color_value.variant.price | money }}"
-                        data-compare-at-price="{{ color_value.variant.compare_at_price | money | default: 0  }}"
-                        title="{{ color_value.name }}"
-                      >
-                        {% if color_value.swatch.image != blank %}
-                          {{ color_value.swatch.image | image_url: width: 12 | image_tag }}
-                        {% else %}
-                          <span style="background-color: {{ color_value.swatch.color }}"></span>
-                        {% endif %}
-                      </button>
-                    {%- endfor -%}
-                  </div>
-                {%- endif -%}
-
-                <h3 class="collection-products__product-card__title">
-                  <a class="collection-products__product-card__title-link" href="{{- product.url -}}">
-                    {{- product.title -}}
-                  </a>
-                </h3>
-
-                <div class="collection-products__price">
-                  {% if featured_variant.compare_at_price != blank
-                    and featured_variant.compare_at_price > featured_variant.price
-                  %}
-                    <span class="collection-products__price--sale">
-                      {{- featured_variant.price | money -}}
-                    </span>
-                    <span class="collection-products__price--compare">
-                      {{- featured_variant.compare_at_price | money -}}
-                    </span>
-                  {% else %}
-                    {{- featured_variant.price | money -}}
-                  {% endif %}
-                </div>
-
-                {% for color_value in color_option.values %}
-                  <details>
-                    <summary>Цвет: {{ color_value.name }}</summary>
-                    <ul>
-                      <li>ID: {{ color_value.variant.id }}</li>
-                      <li>Доступен: {{ color_value.variant.available }}</li>
-                      <li>Количество: {{ color_value.variant.inventory_quantity }}</li>
-                      <li>Incoming: {{ color_value.variant.incoming }}</li>
-                      <li>Next incoming date: {{ color_value.variant.next_incoming_date }}</li>
-                      <li>Цена: {{ color_value.variant.price }}</li>
-                      <li>Старая: {{ color_value.variant.compare_at_price }}</li>
-                      <li>
-                        Картинка:
-                        <p>
-                          {{
-                            color_value.variant.featured_image
-                            | default: product.featured_image
-                            | image_url: width: 100
-                            | image_tag
-                          }}
-                        </p>
-                      </li>
-                    </ul>
-                  </details>
-                {%- endfor -%}
+          <div class="swiper-wrapper collection-products__list-wrapper">
+            {% for product in collection.products limit: 20 %}
+              <div class="js-product-item swiper-slide collection-products__product-card-item">
+                {% render 'product-card', product_card: product %}
               </div>
             {% endfor %}
           </div>
 
-          {% if selected_collection.products_count > 2 %}
+          {% if collection.products_count > 2 %}
             <div class="swiper-pagination"></div>
             <div class="swiper-button swiper-button-prev">
               {% render 'icon-arrow-left' %}
@@ -200,296 +94,11 @@
     </div>
   </section>
 
-  {% if selected_collection.all_products_count > 2 %}
+  {% if collection.all_products_count > 2 %}
     <script src="https://cdn.jsdelivr.net/npm/swiper@12.0.0/swiper-bundle.min.js" defer></script>
   {% endif %}
 
-  <script>
-    // collection-products v4:
-    (function () {
-      const SECTION_ID = '{{ section.id }}';
-
-      const SELECTORS = {
-        collectionProducts: 'js-product-list',
-        productCard: 'collection-products__product-card',
-        productPicture: 'collection-products__product-card__picture',
-        btnSwatch: 'js-btn-swatch',
-        isActive: 'is--active',
-        isVisible: 'is--visible',
-        addToCartBtn: 'collection-products__actions__button',
-        price: 'collection-products__price',
-        priceSale: 'collection-products__price--sale',
-        priceCompare: 'collection-products__price--compare',
-        swiperContainer: `swiper-${SECTION_ID}`,
-        checkCartStatusBtn: 'btn---cart-status',
-        checkCartClearedBtn: 'btn---cart-cleared',
-      };
-
-      function updateProductCard(newStates, currentCard) {
-        const { variantIdData, variantPriceData, compareAtPriceData } = newStates;
-
-        const elements = {
-          addToCartBtnEl: currentCard.querySelector(`.${SELECTORS.addToCartBtn}`),
-          oldVisiblePictureEl: currentCard.querySelector(`.${SELECTORS.productPicture}.${SELECTORS.isVisible}`),
-          newVisiblePictureEl: currentCard.querySelector(
-            `.${SELECTORS.productPicture}[data-variant-id="${variantIdData}"]`
-          ),
-          priceEl: currentCard.querySelector(`.${SELECTORS.price}`),
-        };
-        const { addToCartBtnEl, oldVisiblePictureEl, newVisiblePictureEl, priceEl } = elements;
-
-        console.group('Variant');
-        console.table({
-          variantPriceData: variantPriceData,
-          compareAtPriceData: compareAtPriceData,
-          '!=null:': compareAtPriceData != null,
-          '>': compareAtPriceData > variantPriceData,
-          'current id in cart': variantIdData,
-        });
-        console.groupEnd();
-
-        if (oldVisiblePictureEl) {
-          oldVisiblePictureEl.classList.remove(SELECTORS.isVisible);
-        }
-
-        if (newVisiblePictureEl) {
-          newVisiblePictureEl.classList.add(SELECTORS.isVisible);
-        }
-
-        if (compareAtPriceData && compareAtPriceData > variantPriceData) {
-          priceEl.innerHTML = `
-            <span class="${SELECTORS.priceSale}">${variantPriceData}</span>
-            <span class="${SELECTORS.priceCompare}">${compareAtPriceData}</span>
-          `;
-          console.log('Sale! updated data!');
-        } else {
-          priceEl.textContent = variantPriceData;
-          console.log('Price! updated data!');
-        }
-
-        if (addToCartBtnEl) {
-          addToCartBtnEl.dataset.cartId = variantIdData;
-        }
-      }
-
-      function handleSwatchClick(currentBtn) {
-        try {
-          const currentCard = currentBtn.closest(`.${SELECTORS.productCard}`);
-          if (!currentCard) return;
-
-          const oldActiveBtn = currentCard.querySelector(`.${SELECTORS.btnSwatch}.${SELECTORS.isActive}`);
-
-          if (currentBtn.classList.contains(SELECTORS.isActive) || !oldActiveBtn) return;
-
-          if (oldActiveBtn) {
-            oldActiveBtn.classList.remove(SELECTORS.isActive);
-          }
-          currentBtn.classList.add(SELECTORS.isActive);
-
-          const newStates = {
-            variantIdData: currentBtn.dataset.variantId,
-            variantPriceData: currentBtn.dataset.variantPrice,
-            compareAtPriceData: currentBtn.dataset.compareAtPrice,
-          };
-
-          updateProductCard(newStates, currentCard);
-        } catch (error) {
-          console.warn('⚠️ Ошибка селектора в handleSwatchClick:', error.message);
-        }
-      }
-
-      function addToCartHandler(currentAddToCart) {
-        try {
-          const variantIdData = currentAddToCart.dataset.cartId;
-          console.log(`Added to cart! Variant ID: ${variantIdData}`);
-
-          if (variantIdData) {
-            let formData = {
-              items: [
-                {
-                  id: parseInt(variantIdData),
-                  quantity: 1,
-                },
-              ],
-            };
-
-            fetchAddToCart(variantIdData, formData, currentAddToCart);
-          }
-        } catch (error) {
-          console.warn('⚠️ Ошибка селектора в addToCartHandler:', error.message);
-        }
-      }
-
-      function initProductCards() {
-        try {
-          const collectionProducts = document.querySelector(
-            `.${SELECTORS.collectionProducts}[data-section-id="${SECTION_ID}"]`
-          );
-          if (!collectionProducts) return;
-
-          collectionProducts.addEventListener('click', function (event) {
-            const currentBtnSwatch = event.target.closest(`.${SELECTORS.btnSwatch}`);
-            if (currentBtnSwatch) {
-              handleSwatchClick(currentBtnSwatch);
-            }
-
-            const currentAddToCart = event.target.closest(`.${SELECTORS.addToCartBtn}`);
-
-            if (currentAddToCart) {
-              addToCartHandler(currentAddToCart);
-            }
-          });
-
-          const checkCartStatusBtn = document.querySelector(`.${SELECTORS.checkCartStatusBtn}`);
-          if (checkCartStatusBtn) {
-            checkCartStatusBtn.addEventListener('click', function () {
-              fetchCheckCart();
-            });
-          }
-
-          const checkCartClearedBtn = document.querySelector(`.${SELECTORS.checkCartClearedBtn}`);
-          if (checkCartClearedBtn) {
-            checkCartClearedBtn.addEventListener('click', function () {
-              fetchClearCart();
-            });
-          }
-
-          const swiperElement = document.querySelector(`.${SELECTORS.swiperContainer}`);
-
-          const swiperSettings = {
-            loop: true,
-            pagination: {
-              el: '.swiper-pagination',
-              clickable: true,
-            },
-            spaceBetween: 16,
-
-            navigation: {
-              nextEl: '.swiper-button-next',
-              prevEl: '.swiper-button-prev',
-            },
-
-            breakpoints: {
-              320: { slidesPerView: 2 },
-              768: { slidesPerView: 3 },
-              992: { slidesPerView: 2 },
-              1200: { slidesPerView: 3 },
-            },
-          };
-
-          if (swiperElement && typeof Swiper !== 'undefined') {
-            const swiper = new Swiper(swiperElement, swiperSettings);
-          }
-        } catch (error) {
-          console.warn('⚠️ Ошибка инициализации карточек товаров:', error.message);
-        }
-      }
-
-      async function fetchAddToCart(variantIdData, formData, currentAddToCart) {
-        console.log('>> Sending to Shopify:', JSON.stringify(formData));
-
-        if (currentAddToCart?.classList.contains('cart--adding')) return;
-
-        currentAddToCart?.classList.add('cart--adding');
-
-        try {
-          const response = await fetch(window.Shopify.routes.root + 'cart/add.js', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData),
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            if (response.status === 409) {
-              alert('Ой, секунду');
-            }
-
-            console.error('!response.ok, start: ❌ Shopify Error:', data);
-
-            const errorMsg = data.message || `Error ${response.status}`;
-            alert(`❌ ${errorMsg}`);
-            throw new Error(errorMsg);
-          }
-
-          console.log('✅ Add to cart successful:', data);
-          const cartSummary = (data.items || []).map((item) => ({
-            id: item.id,
-            title: item.title,
-            price: item.price,
-            quantity: item.quantity,
-          }));
-          console.log(cartSummary);
-          return data;
-        } catch (error) {
-          console.error('catch: ❌ Fetch error:', error.message || error);
-          return null;
-        } finally {
-          currentAddToCart?.classList.remove('cart--adding');
-        }
-      }
-
-      async function fetchCheckCart() {
-        try {
-          const response = await fetch(window.Shopify.routes.root + 'cart.js', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          const data = await response.json();
-
-          if (!response.ok) {
-            console.error('❌ Shopify Error:', data);
-            const errorMsg = data.message || `Error ${response.status}`;
-            alert(`❌ ${errorMsg}`);
-            throw new Error(errorMsg);
-          }
-          console.log('✅ Cart status fetched:', data);
-          const cartSummary = (data.items || []).map((item) => ({
-            id: item.id,
-            title: item.title,
-            price: item.price,
-            quantity: item.quantity,
-          }));
-          console.log(cartSummary);
-          return data;
-        } catch (error) {
-          console.error('catch: ❌ Fetch error:', error.message || error);
-          return null;
-        }
-      }
-
-      async function fetchClearCart() {
-        try {
-          const response = await fetch(window.Shopify.routes.root + 'cart/clear.js', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          });
-          const data = await response.json();
-          if (!response.ok) {
-            console.error('❌ Shopify Error:', data);
-            const errorMsg = data.message || `Error ${response.status}`;
-            throw new Error(errorMsg);
-          }
-          console.log('✅ Cart cleared:', data);
-          return data;
-        } catch (error) {
-          console.error('catch: ❌ Fetch error:', error.message || error);
-          return null;
-        }
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        initProductCards();
-      });
-    })();
-  </script>
+  <script src="{{ 'collection-products.js' | asset_url }}" defer></script>
 
 {% else %}
   <p>{{ 'No collection selected' | escape }}</p>
