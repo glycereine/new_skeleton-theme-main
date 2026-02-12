@@ -1,0 +1,116 @@
+{% comment %}
+  Renders a product card
+
+  Accepts:
+  @param {String} product_card - The product object to display.
+
+  Usage:
+  {% render 'product-card', product_card: product %}
+{% endcomment %}
+
+{{ 'product-card.css' | asset_url | stylesheet_tag }}
+
+{% liquid
+  assign color_option = product_card.options_by_name.color
+  assign featured_variant = product_card.selected_or_first_available_variant
+%}
+
+<div class="js-product-card product-card">
+  <div class="product-card__media">
+    <a class="product-card__link" href="{{- product_card.url -}}">
+      {%- if color_option != blank -%}
+        {% for color_value in color_option.values %}
+          {% assign product_variant_image = color_value.variant.featured_image | default: product_card.featured_image %}
+          {% render 'product-card-image',
+            image: product_variant_image,
+            variant_id: color_value.variant.id,
+            picture_class: 'js-product-picture product-card__picture',
+            image_class: 'product-card__img',
+            image_width: 400,
+            source_responsive_widths: '163.5,359.5,471.5',
+            source_media_queries: '(max-width: 375px),(max-width: 767px),(max-width: 991px)',
+            is_first: forloop.first
+          %}
+        {% endfor -%}
+      {% else %}
+        {% render 'product-card-image',
+          image: product_card.featured_image,
+          variant_id: product_card.selected_or_first_available_variant.id,
+          picture_class: 'js-product-picture product-card__picture',
+          image_class: 'product-card__img',
+          image_width: 400,
+          source_responsive_widths: '163.5,359.5,471.5',
+          source_media_queries: '(max-width: 375px),(max-width: 767px),(max-width: 991px)',
+          is_first: true
+        %}
+      {% endif %}
+    </a>
+
+    {%- if product_card.tags.size > 0 -%}
+      <div class="product-card__tags">
+        {% for tag in product_card.tags limit: 5 %}
+
+          {% liquid 
+            assign tag_sale = tag | downcase 
+            assign modifier = 'default'
+            if tag_sale contains 'sale'
+              assign modifier = 'sale'
+            endif
+          %}
+
+          <span class="product-card__badge product-card__badge--{{- modifier -}}">
+            {{ tag | capitalize }}
+          </span>
+        {% endfor %}
+      </div>
+    {%- endif -%}
+
+    <div class="product-card__actions">
+      <button
+        class="js-btn-cart product-card__button"
+        data-cart-id="{{ product_card.selected_or_first_available_variant.id }}"
+        aria-label="Quick view"
+      >
+        {% render 'icon-quick-view' %}
+      </button>
+    </div>
+  </div>
+
+  {%- if color_option != blank -%}
+    <div class="product-card__swatches">
+      {% for color_value in color_option.values %}
+        <button
+          type="button"
+          class="js-btn-swatch product-card__btn-swatch {% if forloop.first %}is--active{% endif %}"
+          data-variant-id="{{ color_value.variant.id }}"
+          title="{{ color_value.name }}"
+        >
+          {% if color_value.swatch.image != blank %}
+            {{ color_value.swatch.image | image_url: width: 12 | image_tag }}
+          {% else %}
+            <span style="background-color: {{ color_value.swatch.color }}"></span>
+          {% endif %}
+        </button>
+      {%- endfor -%}
+    </div>
+  {%- endif -%}
+
+  <h3 class="product-card__title">
+    <a class="product-card__title-link" href="{{- product_card.url -}}">
+      {{- product_card.title -}}
+    </a>
+  </h3>
+
+  <div class="product-card__price">
+    {% if featured_variant.compare_at_price != blank and featured_variant.compare_at_price > featured_variant.price %}
+      <span class="product-card__price--sale">
+        {{- featured_variant.price | money -}}
+      </span>
+      <span class="product-card__price--compare">
+        {{- featured_variant.compare_at_price | money -}}
+      </span>
+    {% else %}
+      {{- featured_variant.price | money -}}
+    {% endif %}
+  </div>
+</div>

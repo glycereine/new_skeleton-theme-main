@@ -9,6 +9,8 @@
     addToCartBtn: 'js-btn-cart',
   };
 
+  const baseShopifyUrl = window.Shopify?.routes?.root || '/';
+
   function updateProductCard(newStates, currentCard) {
     const { variantIdData } = newStates;
 
@@ -41,7 +43,7 @@
 
     const oldActiveBtn = currentCard.querySelector(`.${SELECTORS.btnSwatch}.${SELECTORS.isActive}`);
 
-    if (currentBtn.classList.contains(SELECTORS.isActive) || !oldActiveBtn) return;
+    if (oldActiveBtn === currentBtn) return;
 
     if (oldActiveBtn) {
       oldActiveBtn.classList.remove(SELECTORS.isActive);
@@ -49,14 +51,14 @@
     currentBtn.classList.add(SELECTORS.isActive);
 
     const newStates = {
-      variantIdData: currentBtn.dataset.variantId,
+      variantIdData: currentBtn.dataset.variantId ?? "",
     };
 
     updateProductCard(newStates, currentCard);
   }
 
   function handleAddToCart(currentAddToCart) {
-    const variantIdData = currentAddToCart.dataset.cartId;
+    const variantIdData = currentAddToCart.dataset.cartId ?? "";
 
     if (variantIdData) {
       let formData = {
@@ -77,7 +79,7 @@
     currentAddToCart.setAttribute('disabled', '');
 
     try {
-      const response = await fetch(window.Shopify.routes.root + 'cart/add.js', {
+      const response = await fetch(baseShopifyUrl + 'cart/add.js', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -85,23 +87,20 @@
         body: JSON.stringify(formData),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        alert(`⚠️: ${response.status}, ${data.message}`);
-
+        alert(`⚠️ ${variantIdData}: ${response.status}, ${data.description || data.message}`);
         throw new Error(`⚠️: ${response.status}, ${data.description || data.message}`);
       }
 
-      const successMessage = `✅ ${variantIdData}: Added to cart. Successful: (${response.status})`;
+      const successMessage = `✅ ${variantIdData}: Added to cart. Successfull! (${response.status})`;
       alert(successMessage);
 
-      console.log('success data:', data);
-      console.log('success response:', response);
-
       return data;
+
     } catch (error) {
-      alert(`❌ catch:  ${error.message}`);
+      alert(`❌catch: ${error.message}`);
     } finally {
       currentAddToCart.removeAttribute('disabled');
     }
