@@ -37,11 +37,9 @@
     bottom: 0px;
     left: 0px;
     height: 132px;
-    background: linear-gradient(
-        180deg,
-        rgb(from var(--color-black) r g b / 0) 0%,
-        rgb(from var(--color-black) r g b / 0.5) 100%
-    );
+    background: linear-gradient(180deg,
+            rgb(from var(--color-black) r g b / 0) 0%,
+            rgb(from var(--color-black) r g b / 0.5) 100%);
     content: '';
 }
 
@@ -67,6 +65,7 @@
     transform: translateX(-50%);
     color: var(--color-white);
 }
+
 .collection-products__overlay-title {
     font-weight: 500;
     font-size: 22px;
@@ -106,7 +105,7 @@
 
 .collection-products__list .swiper-button {
     display: flex;
-    top: 0 ;
+    top: 0;
     flex-direction: row;
     align-items: center;
     justify-content: center;
@@ -116,10 +115,15 @@
 
     margin-top: calc(33.33% / 2 - 32px);
     padding: 24px 16px;
-    transform: translateY(27px);
-    border: 1px solid var(--color-grey-ligh);
+    transform: translateY(66px);
+    border: 1px solid var(--color-grey-light);
     border-radius: 12px;
     background-color: var(--color-white);
+
+}
+
+.collection-products__list .swiper-button.swiper-button-disabled {
+    pointer-events: all;
 }
 
 .collection-products__list .swiper-button-prev {
@@ -143,6 +147,7 @@
     margin: 0 8px;
     border-radius: 4px;
 }
+
 .collection-products__list .swiper-pagination-bullet-active {
     width: 24px;
     background: var(--color-black);
@@ -151,7 +156,13 @@
 .collection-products__list.swiper:not(.swiper-initialized) .swiper-button,
 .collection-products__list .swiper-button.swiper-button-lock,
 .collection-products__list .swiper-pagination-lock {
-  display: none;
+    display: none;
+}
+
+@media (max-width: 1536px) {
+    .collection-products__list .swiper-button {
+        transform: translateY(27px);
+    }
 }
 
 @media (max-width: 1199px) {
@@ -199,9 +210,6 @@
     }
 
     .collection-products__list .swiper-button {
-        width: 35px;
-        height: 44px;
-        margin-top: calc(50% / 2 - 22px);
-        padding: 14px 9px;
+        display: none;
     }
 }

@@ -78,7 +78,7 @@
 
   {%- if color_option != blank -%}
     <div class="product-card__swatches">
-      {% for color_value in color_option.values %}
+      {% for color_value in color_option.values limit: 5 %}
         <button
           type="button"
           class="js-btn-swatch product-card__btn-swatch {% if forloop.first %}is--active{% endif %}"

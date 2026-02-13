@@ -30,9 +30,16 @@
         },
 
         breakpoints: {
-          320: { slidesPerView: 2 },
-          768: { slidesPerView: 3 },
-          992: { slidesPerView: 2 },
+          320: { 
+            slidesPerView: 2,
+            navigation: { enabled: false }
+           },
+          768: { 
+            slidesPerView: 3,
+          },
+          992: { 
+            slidesPerView: 2
+           },
           1200: { slidesPerView: 3 },
         },
       };
